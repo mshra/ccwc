@@ -32,44 +32,26 @@ func init() {
 }
 
 func main() {
+	file, err := os.Open(fileName)
+	checkError(err)
+	defer file.Close()
+
 	if isNumberOfByteModeEnabled {
-		file, err := os.Open(fileName)
-		checkError(err)
-		defer file.Close()
 		fmt.Println(getNumberOfBytesInFile(file), fileName)
 		return
 	}
 
 	if isNumberOfLineModeEnabled {
-		file, err := os.Open(fileName)
-		checkError(err)
-		defer file.Close()
 		fmt.Println(getNumberOfLinesInFile(file), fileName)
 		return
 	}
 
 	if isNumberOfWordsModeEnabled {
-		file, err := os.Open(fileName)
-		checkError(err)
-		defer file.Close()
 		fmt.Println(getNumberOfWordsInFile(file), fileName)
-		return
 	}
 
-	fileToReadNumberOfBytes, err := os.Open(fileName)
-	checkError(err)
-	defer fileToReadNumberOfBytes.Close()
-
-	fileToReadNumberOfLines, err := os.Open(fileName)
-	checkError(err)
-	defer fileToReadNumberOfLines.Close()
-
-	fileToReadNumberofWords, err := os.Open(fileName)
-	checkError(err)
-	defer fileToReadNumberofWords.Close()
-
-	fmt.Println(getNumberOfLinesInFile(fileToReadNumberOfLines), getNumberOfWordsInFile(fileToReadNumberofWords), getNumberOfBytesInFile(fileToReadNumberOfBytes), fileName)
-	return
+	file.Seek(0, 0)
+	fmt.Println(getNumberOfLinesInFile(file), getNumberOfWordsInFile(file), getNumberOfBytesInFile(file), fileName)
 }
 
 func checkError(err error) {
@@ -106,4 +88,41 @@ func getNumberOfWordsInFile(f *os.File) int {
 	checkError(scanner.Err())
 
 	return wordsCount
+}
+
+func testingNumberOfLinesFromStdin() int64 {
+	var lines int64
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for scanner.Scan() {
+		lines += 1
+	}
+
+	return lines
+}
+
+func testigNumberofbytesinfile() int64 {
+	var byteCount int64
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanBytes)
+
+	for scanner.Scan() {
+		byteCount++
+	}
+	checkError(scanner.Err())
+
+	return byteCount
+}
+
+func testingNumberOfWordsInFile() int64 {
+	var wordcount int64
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	for scanner.Scan() {
+		wordcount++
+	}
+	checkError(scanner.Err())
+
+	return wordcount
 }
