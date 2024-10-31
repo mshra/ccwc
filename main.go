@@ -77,8 +77,8 @@ func getNumberOfLinesInFile(f *os.File) int64 {
 	return lineCount
 }
 
-func getNumberOfWordsInFile(f *os.File) int {
-	wordsCount := 0
+func getNumberOfWordsInFile(f *os.File) int64 {
+	var wordsCount int64
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanWords)
 
