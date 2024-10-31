@@ -10,6 +10,7 @@ import (
 
 var (
 	fileName                   string
+	readingFromStdin           bool
 	isNumberOfByteModeEnabled  bool
 	isNumberOfLineModeEnabled  bool
 	isNumberOfWordsModeEnabled bool
@@ -21,11 +22,16 @@ func init() {
 	flag.BoolVar(&isNumberOfWordsModeEnabled, "m", false, "read number of fileToReadNumberofWords in the given file")
 
 	flag.Parse()
+	args := flag.Args()
+
+	readingFromStdin = true
+	if len(args) > 0 {
+		fileName = args[0]
+		readingFromStdin = false
+	}
 }
 
 func main() {
-	fileName = os.Args[len(os.Args)-1]
-
 	if isNumberOfByteModeEnabled {
 		file, err := os.Open(fileName)
 		checkError(err)
