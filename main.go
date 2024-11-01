@@ -11,6 +11,7 @@ import (
 
 var (
 	fileName         string
+	reader           io.Reader
 	readingFromStdin bool
 	isByteMode       bool
 	isLineMode       bool
@@ -33,29 +34,27 @@ func init() {
 }
 
 func main() {
-	file, err := os.Open(fileName)
-	checkForError(err)
-	defer file.Close()
+	reader = os.Stdin
+	if !readingFromStdin {
+		var err error
+		reader, err = os.Open(fileName)
+		checkForError(err)
+	}
 
 	if isByteMode {
-		numberOfBytes := getNumberOf(file, bufio.ScanBytes)
-		fmt.Println(numberOfBytes, fileName)
+		fmt.Println(getNumberOf(reader, bufio.ScanBytes), fileName)
 		return
 	}
 
 	if isLineMode {
-		numberOfLines := getNumberOf(file, bufio.ScanLines)
-		fmt.Println(numberOfLines, fileName)
+		fmt.Println(getNumberOf(reader, bufio.ScanLines), fileName)
 		return
 	}
 
 	if isWordMode {
-		numberOfWords := getNumberOf(file, bufio.ScanWords)
-		fmt.Println(numberOfWords, fileName)
+		fmt.Println(getNumberOf(reader, bufio.ScanWords), fileName)
 		return
 	}
-
-	// fmt.Println(getNumberOfLinesInFile(file), getNumberOfWordsInFile(file), getNumberOfBytesInFile(file), fileName)
 }
 
 func checkForError(err error) {
