@@ -34,6 +34,25 @@ func init() {
 	}
 }
 
+func checkForError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func getNumberOf(reader io.Reader, splitMode bufio.SplitFunc) int64 {
+	var count int64
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(splitMode)
+
+	for scanner.Scan() {
+		count++
+	}
+	checkForError(scanner.Err())
+
+	return count
+}
+
 func main() {
 	reader = os.Stdin
 	if !readingFromStdin {
@@ -59,29 +78,9 @@ func main() {
 
 	buff, err := io.ReadAll(reader)
 	checkForError(err)
-	splitModes := [...]bufio.SplitFunc{bufio.ScanBytes, bufio.ScanLines, bufio.ScanWords}
 
-	for _, mode := range splitModes {
+	for _, mode := range []bufio.SplitFunc{bufio.ScanLines, bufio.ScanWords, bufio.ScanBytes} {
 		fmt.Printf("%v ", getNumberOf(bytes.NewBuffer(buff), mode))
 	}
 	fmt.Printf("%s\n", fileName)
-}
-
-func checkForError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func getNumberOf(reader io.Reader, splitMode bufio.SplitFunc) int64 {
-	var count int64
-	scanner := bufio.NewScanner(reader)
-	scanner.Split(splitMode)
-
-	for scanner.Scan() {
-		count++
-	}
-	checkForError(scanner.Err())
-
-	return count
 }
