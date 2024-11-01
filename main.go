@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -55,6 +56,15 @@ func main() {
 		fmt.Println(getNumberOf(reader, bufio.ScanWords), fileName)
 		return
 	}
+
+	buff, err := io.ReadAll(reader)
+	checkForError(err)
+	splitModes := [...]bufio.SplitFunc{bufio.ScanBytes, bufio.ScanLines, bufio.ScanWords}
+
+	for _, mode := range splitModes {
+		fmt.Printf("%v ", getNumberOf(bytes.NewBuffer(buff), mode))
+	}
+	fmt.Printf("%s\n", fileName)
 }
 
 func checkForError(err error) {
