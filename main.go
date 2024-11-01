@@ -4,22 +4,23 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
 
 var (
-	fileName                   string
-	readingFromStdin           bool
-	isNumberOfByteModeEnabled  bool
-	isNumberOfLineModeEnabled  bool
-	isNumberOfWordsModeEnabled bool
+	fileName         string
+	readingFromStdin bool
+	isByteMode       bool
+	isLineMode       bool
+	isWordMode       bool
 )
 
 func init() {
-	flag.BoolVar(&isNumberOfByteModeEnabled, "c", false, "read number of fileToReadNumberOfBytes in the given file")
-	flag.BoolVar(&isNumberOfLineModeEnabled, "l", false, "read number of fileToReadNumberOfLines in the given file")
-	flag.BoolVar(&isNumberOfWordsModeEnabled, "m", false, "read number of fileToReadNumberofWords in the given file")
+	flag.BoolVar(&isByteMode, "c", false, "to read number of bytes")
+	flag.BoolVar(&isLineMode, "l", false, "to read number of lines")
+	flag.BoolVar(&isWordMode, "m", false, "to read number of words")
 
 	flag.Parse()
 	args := flag.Args()
@@ -33,96 +34,45 @@ func init() {
 
 func main() {
 	file, err := os.Open(fileName)
-	checkError(err)
+	checkForError(err)
 	defer file.Close()
 
-	if isNumberOfByteModeEnabled {
-		fmt.Println(getNumberOfBytesInFile(file), fileName)
+	if isByteMode {
+		numberOfBytes := getNumberOf(file, bufio.ScanBytes)
+		fmt.Println(numberOfBytes, fileName)
 		return
 	}
 
-	if isNumberOfLineModeEnabled {
-		fmt.Println(getNumberOfLinesInFile(file), fileName)
+	if isLineMode {
+		numberOfLines := getNumberOf(file, bufio.ScanLines)
+		fmt.Println(numberOfLines, fileName)
 		return
 	}
 
-	if isNumberOfWordsModeEnabled {
-		fmt.Println(getNumberOfWordsInFile(file), fileName)
+	if isWordMode {
+		numberOfWords := getNumberOf(file, bufio.ScanWords)
+		fmt.Println(numberOfWords, fileName)
+		return
 	}
 
-	file.Seek(0, 0)
-	fmt.Println(getNumberOfLinesInFile(file), getNumberOfWordsInFile(file), getNumberOfBytesInFile(file), fileName)
+	// fmt.Println(getNumberOfLinesInFile(file), getNumberOfWordsInFile(file), getNumberOfBytesInFile(file), fileName)
 }
 
-func checkError(err error) {
+func checkForError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func getNumberOfBytesInFile(f *os.File) int64 {
-	fileStat, err := f.Stat()
-	checkError(err)
-	return fileStat.Size()
-}
-
-func getNumberOfLinesInFile(f *os.File) int64 {
-	var lineCount int64
-	scanner := bufio.NewScanner(f)
+func getNumberOf(reader io.Reader, splitMode bufio.SplitFunc) int64 {
+	var count int64
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(splitMode)
 
 	for scanner.Scan() {
-		lineCount++
+		count++
 	}
+	checkForError(scanner.Err())
 
-	return lineCount
-}
-
-func getNumberOfWordsInFile(f *os.File) int64 {
-	var wordsCount int64
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanWords)
-
-	for scanner.Scan() {
-		wordsCount++
-	}
-	checkError(scanner.Err())
-
-	return wordsCount
-}
-
-func testingNumberOfLinesFromStdin() int64 {
-	var lines int64
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for scanner.Scan() {
-		lines += 1
-	}
-
-	return lines
-}
-
-func testigNumberofbytesinfile() int64 {
-	var byteCount int64
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanBytes)
-
-	for scanner.Scan() {
-		byteCount++
-	}
-	checkError(scanner.Err())
-
-	return byteCount
-}
-
-func testingNumberOfWordsInFile() int64 {
-	var wordcount int64
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
-
-	for scanner.Scan() {
-		wordcount++
-	}
-	checkError(scanner.Err())
-
-	return wordcount
+	return count
 }
