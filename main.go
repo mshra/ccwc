@@ -19,15 +19,7 @@ var (
 )
 
 func init() {
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [FILE]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Options:\n")
-		fmt.Fprintf(os.Stderr, "  -c\tto count bytes\n")
-		fmt.Fprintf(os.Stderr, "  -l\tto count lines\n")
-		fmt.Fprintf(os.Stderr, "  -m\tto count words\n")
-		fmt.Fprintf(os.Stderr, "\nIf no flags are specified, defaults to counting lines, words, and bytes.\n")
-		fmt.Fprintf(os.Stderr, "If no file is specified, reads from standard input.\n")
-	}
+	flag.Usage = flagUsage
 	flag.CommandLine.SetOutput(io.Discard)
 
 	flag.BoolVar(&isByteMode, "c", false, "to count number of bytes")
@@ -73,6 +65,16 @@ func main() {
 		}
 		fmt.Printf("%s\n", fileName)
 	}
+}
+
+func flagUsage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [FILE]\n\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Options:\n")
+	fmt.Fprintf(os.Stderr, "  -c\tto count bytes\n")
+	fmt.Fprintf(os.Stderr, "  -l\tto count lines\n")
+	fmt.Fprintf(os.Stderr, "  -m\tto count words\n")
+	fmt.Fprintf(os.Stderr, "\nIf no flags are specified, defaults to counting lines, words, and bytes.\n")
+	fmt.Fprintf(os.Stderr, "If no file is specified, reads from standard input.\n")
 }
 
 func checkForError(err error) {
