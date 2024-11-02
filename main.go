@@ -11,12 +11,12 @@ import (
 )
 
 var (
-	fileName         string
-	reader           io.Reader
-	readingFromStdin bool
-	isByteMode       bool
-	isLineMode       bool
-	isWordMode       bool
+	fileName        string
+	reader          io.Reader
+	readingFromFile bool
+	isByteMode      bool
+	isLineMode      bool
+	isWordMode      bool
 )
 
 func init() {
@@ -27,10 +27,12 @@ func init() {
 	flag.Parse()
 	args := flag.Args()
 
-	readingFromStdin = true
+	readingFromFile = false
+	reader = os.Stdin
+
 	if len(args) > 0 {
 		fileName = args[0]
-		readingFromStdin = false
+		readingFromFile = true
 	}
 }
 
@@ -54,33 +56,29 @@ func getNumberOf(reader io.Reader, splitMode bufio.SplitFunc) int64 {
 }
 
 func main() {
-	reader = os.Stdin
-	if !readingFromStdin {
+	if readingFromFile {
 		var err error
 		reader, err = os.Open(fileName)
 		checkForError(err)
 	}
 
-	if isByteMode {
+	switch {
+	case isByteMode:
 		fmt.Println(getNumberOf(reader, bufio.ScanBytes), fileName)
 		return
-	}
-
-	if isLineMode {
+	case isLineMode:
 		fmt.Println(getNumberOf(reader, bufio.ScanLines), fileName)
 		return
-	}
-
-	if isWordMode {
+	case isWordMode:
 		fmt.Println(getNumberOf(reader, bufio.ScanWords), fileName)
 		return
-	}
+	default:
+		buff, err := io.ReadAll(reader)
+		checkForError(err)
 
-	buff, err := io.ReadAll(reader)
-	checkForError(err)
-
-	for _, mode := range []bufio.SplitFunc{bufio.ScanLines, bufio.ScanWords, bufio.ScanBytes} {
-		fmt.Printf("%v ", getNumberOf(bytes.NewBuffer(buff), mode))
+		for _, mode := range []bufio.SplitFunc{bufio.ScanLines, bufio.ScanWords, bufio.ScanBytes} {
+			fmt.Printf("%v ", getNumberOf(bytes.NewBuffer(buff), mode))
+		}
+		fmt.Printf("%s\n", fileName)
 	}
-	fmt.Printf("%s\n", fileName)
 }
