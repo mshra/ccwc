@@ -65,13 +65,10 @@ func main() {
 	switch {
 	case isByteMode:
 		fmt.Println(getNumberOf(reader, bufio.ScanBytes), fileName)
-		return
 	case isLineMode:
 		fmt.Println(getNumberOf(reader, bufio.ScanLines), fileName)
-		return
 	case isWordMode:
 		fmt.Println(getNumberOf(reader, bufio.ScanWords), fileName)
-		return
 	default:
 		buff, err := io.ReadAll(reader)
 		checkForError(err)
