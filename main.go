@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 )
 
@@ -20,39 +19,34 @@ var (
 )
 
 func init() {
-	flag.BoolVar(&isByteMode, "c", false, "to read number of bytes")
-	flag.BoolVar(&isLineMode, "l", false, "to read number of lines")
-	flag.BoolVar(&isWordMode, "m", false, "to read number of words")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [FILE]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		fmt.Fprintf(os.Stderr, "  -c\tto count bytes\n")
+		fmt.Fprintf(os.Stderr, "  -l\tto count lines\n")
+		fmt.Fprintf(os.Stderr, "  -m\tto count words\n")
+		fmt.Fprintf(os.Stderr, "\nIf no flags are specified, defaults to counting lines, words, and bytes.\n")
+		fmt.Fprintf(os.Stderr, "If no file is specified, reads from standard input.\n")
+	}
+
+	flag.BoolVar(&isByteMode, "c", false, "to count number of bytes")
+	flag.BoolVar(&isLineMode, "l", false, "to count number of lines")
+	flag.BoolVar(&isWordMode, "m", false, "to count number of words")
 
 	flag.Parse()
-	args := flag.Args()
 
-	readingFromFile = false
-	reader = os.Stdin
-
-	if len(args) > 0 {
-		fileName = args[0]
+	switch flag.NArg() {
+	case 0:
+		readingFromFile = false
+		reader = os.Stdin
+	case 1:
 		readingFromFile = true
+		fileName = flag.Arg(0)
+	default:
+		fmt.Fprintf(os.Stderr, "Error: too many arguments\n\n")
+		flag.Usage()
+		os.Exit(1)
 	}
-}
-
-func checkForError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func getNumberOf(reader io.Reader, splitMode bufio.SplitFunc) int64 {
-	var count int64
-	scanner := bufio.NewScanner(reader)
-	scanner.Split(splitMode)
-
-	for scanner.Scan() {
-		count++
-	}
-	checkForError(scanner.Err())
-
-	return count
 }
 
 func main() {
@@ -78,4 +72,24 @@ func main() {
 		}
 		fmt.Printf("%s\n", fileName)
 	}
+}
+
+func checkForError(err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+}
+
+func getNumberOf(reader io.Reader, splitMode bufio.SplitFunc) int64 {
+	var count int64
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(splitMode)
+
+	for scanner.Scan() {
+		count++
+	}
+	checkForError(scanner.Err())
+
+	return count
 }
