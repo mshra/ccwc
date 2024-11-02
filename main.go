@@ -28,6 +28,7 @@ func init() {
 		fmt.Fprintf(os.Stderr, "\nIf no flags are specified, defaults to counting lines, words, and bytes.\n")
 		fmt.Fprintf(os.Stderr, "If no file is specified, reads from standard input.\n")
 	}
+	flag.CommandLine.SetOutput(io.Discard)
 
 	flag.BoolVar(&isByteMode, "c", false, "to count number of bytes")
 	flag.BoolVar(&isLineMode, "l", false, "to count number of lines")
